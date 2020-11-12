@@ -64,3 +64,30 @@ class RestaurantMenuItem(models.Model):
         unique_together = [
             ['restaurant', 'product']
         ]
+
+
+class Order(models.Model):
+    customer_first_name = models.CharField(max_length=200, verbose_name='Имя')
+    customer_last_name = models.CharField(max_length=200, verbose_name='Фамилия')
+    phone_number = models.CharField(max_length=40, verbose_name='Телефон')
+    address = models.CharField(max_length=500, verbose_name='Адрес')
+
+    class Meta:
+        verbose_name = 'заказ'
+        verbose_name_plural = 'заказы'
+
+    def __str__(self):
+        return f'{self.customer_first_name} {self.customer_last_name} {self.address}'
+
+
+class OrderProduct(models.Model):
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items', verbose_name='Заказ')
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_items', verbose_name='Товар')
+    quantity = models.PositiveSmallIntegerField(verbose_name='Количество')
+
+    def __str__(self):
+        return f'{self.product} {self.order}'
+
+    class Meta:
+        verbose_name = 'Элемент заказа'
+        verbose_name_plural = 'Элементы заказа'
