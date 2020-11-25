@@ -63,16 +63,27 @@ def product_list_api(request):
 def register_order(request):
     order_data = request.data
 
-    if 'products' not in order_data:
-        content = {'error': 'products key not presented'}
+    if order_data.keys() < {'products', 'firstname', 'lastname', 'phonenumber', 'address'}:
+        not_presented_keys = {'products', 'firstname', 'lastname', 'phonenumber', 'address'} - order_data.keys()
+        content = {'error': f'keys {not_presented_keys} not presented'}
+        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not all(order_data.values()):
+        empty_keys = [k for k, v in order_data.items() if not v]
+        content = {'error': f'keys {empty_keys} is empty'}
         return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     if not isinstance(order_data['products'], list):
         content = {'error': 'products key not list'}
         return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
 
-    if not order_data['products']:
-        content = {'error': 'products key empty'}
+    if not all(isinstance(product['product'], int) for product in order_data['products']):
+        content = {'error': 'product must be int'}
+        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+    if not all(isinstance(v, str) for k, v in order_data.items() if k != 'products'):
+        not_str_values = [k for k, v in order_data.items() if k != 'products' and not isinstance(v, str)]
+        content = {'error': f'values {not_str_values} must be string'}
         return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     order = Order.objects.create(
