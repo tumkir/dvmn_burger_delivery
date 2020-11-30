@@ -3,6 +3,7 @@ from django.templatetags.static import static
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer, ValidationError
 
 from .models import Order, OrderProduct, Product
 
@@ -59,45 +60,44 @@ def product_list_api(request):
     })
 
 
+class OrderProductSerializer(ModelSerializer):
+    class Meta:
+        model = OrderProduct
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = OrderProductSerializer(many=True, write_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['id', 'products', 'firstname', 'lastname', 'phonenumber', 'address']
+
+
 @api_view(['POST'])
 def register_order(request):
-    order_data = request.data
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
 
-    if order_data.keys() < {'products', 'firstname', 'lastname', 'phonenumber', 'address'}:
-        not_presented_keys = {'products', 'firstname', 'lastname', 'phonenumber', 'address'} - order_data.keys()
-        content = {'error': f'keys {not_presented_keys} not presented'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+    products_fields = serializer.validated_data['products']
 
-    if not all(order_data.values()):
-        empty_keys = [k for k, v in order_data.items() if not v]
-        content = {'error': f'keys {empty_keys} is empty'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    if not isinstance(order_data['products'], list):
-        content = {'error': 'products key not list'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    if not all(isinstance(product['product'], int) for product in order_data['products']):
-        content = {'error': 'product must be int'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
-
-    if not all(isinstance(v, str) for k, v in order_data.items() if k != 'products'):
-        not_str_values = [k for k, v in order_data.items() if k != 'products' and not isinstance(v, str)]
-        content = {'error': f'values {not_str_values} must be string'}
-        return Response(content, status=status.HTTP_406_NOT_ACCEPTABLE)
+    if not products_fields:
+        raise ValidationError('Products field must be not empty list')
 
     order = Order.objects.create(
-        customer_first_name=order_data['firstname'],
-        customer_last_name=order_data['lastname'],
-        phone_number=order_data['phonenumber'],
-        address=order_data['address'],
+        firstname=serializer.validated_data['firstname'],
+        lastname=serializer.validated_data['lastname'],
+        phonenumber=serializer.validated_data['phonenumber'],
+        address=serializer.validated_data['address'],
     )
 
-    for order_item in order_data['products']:
+    for order_item in products_fields:
         OrderProduct.objects.create(
             order=order,
-            product=Product.objects.get(pk=order_item['product']),
+            product=order_item['product'],
             quantity=order_item['quantity']
         )
 
-    return Response(order_data)
+    response = OrderSerializer(data=order) #для починки убрать "data="
+
+    return Response(response.data, status=status.HTTP_201_CREATED)

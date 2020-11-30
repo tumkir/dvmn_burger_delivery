@@ -67,9 +67,9 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
-    customer_first_name = models.CharField(max_length=200, verbose_name='Имя')
-    customer_last_name = models.CharField(max_length=200, verbose_name='Фамилия')
-    phone_number = models.CharField(max_length=40, verbose_name='Телефон')
+    firstname = models.CharField(max_length=200, verbose_name='Имя')
+    lastname = models.CharField(max_length=200, verbose_name='Фамилия')
+    phonenumber = models.CharField(max_length=40, verbose_name='Телефон')
     address = models.CharField(max_length=500, verbose_name='Адрес')
 
     class Meta:
@@ -77,7 +77,7 @@ class Order(models.Model):
         verbose_name_plural = 'заказы'
 
     def __str__(self):
-        return f'{self.customer_first_name} {self.customer_last_name} {self.address}'
+        return f'{self.firstname} {self.lastname} {self.address}'
 
 
 class OrderProduct(models.Model):
