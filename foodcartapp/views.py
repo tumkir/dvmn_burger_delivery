@@ -95,9 +95,10 @@ def register_order(request):
         OrderProduct.objects.create(
             order=order,
             product=order_item['product'],
-            quantity=order_item['quantity']
+            quantity=order_item['quantity'],
+            price=order_item['product'].price * order_item['quantity']
         )
 
-    response = OrderSerializer(data=order) #для починки убрать "data="
+    response = OrderSerializer(order)
 
     return Response(response.data, status=status.HTTP_201_CREATED)
