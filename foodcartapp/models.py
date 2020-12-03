@@ -78,6 +78,7 @@ class Order(models.Model):
     phonenumber = models.CharField(max_length=40, verbose_name='Телефон')
     address = models.CharField(max_length=500, verbose_name='Адрес')
     status = models.CharField(max_length=15, choices=ORDER_STATUS_CHOICES, default='NEW', verbose_name='Статус заказа')
+    comment = models.TextField(blank=True, verbose_name='Комментарий')
 
     class Meta:
         verbose_name = 'заказ'
