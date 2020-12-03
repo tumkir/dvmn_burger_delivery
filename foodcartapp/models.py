@@ -67,10 +67,17 @@ class RestaurantMenuItem(models.Model):
 
 
 class Order(models.Model):
+
+    ORDER_STATUS_CHOICES = [
+        ('NEW', 'Необработанный'),
+        ('COMPLETED', 'Обработанный')
+    ]
+
     firstname = models.CharField(max_length=200, verbose_name='Имя')
     lastname = models.CharField(max_length=200, verbose_name='Фамилия')
     phonenumber = models.CharField(max_length=40, verbose_name='Телефон')
     address = models.CharField(max_length=500, verbose_name='Адрес')
+    status = models.CharField(max_length=15, choices=ORDER_STATUS_CHOICES, default='NEW', verbose_name='Статус заказа')
 
     class Meta:
         verbose_name = 'заказ'
