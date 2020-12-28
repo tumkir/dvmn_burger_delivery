@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
+from django.core.cache import cache
 from django.db.models import Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -102,6 +103,8 @@ def view_orders(request):
 
     unavailability_products = list(RestaurantMenuItem.objects.filter(availability=False).values_list('restaurant_id', 'product_id'))
 
+    cache_expiration_time = 60 * 60 * 24 * 7
+
     for order in orders:
         order_products_id = list(order.order_items.values_list('product_id', flat=True))
         inappropriate_restaurants_ids = [
@@ -110,7 +113,11 @@ def view_orders(request):
 
         appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids).order_by('name')
         for restaurant in appropriate_restaurants:
-            restaurant.distance = calculate_distance(restaurant.address, order.address)
+            restaurant.distance = cache.get_or_set(
+                f'{restaurant.address} — {order.address}',
+                calculate_distance(restaurant.address, order.address),
+                cache_expiration_time
+            )
 
         order.restaurants = sorted(appropriate_restaurants, key=lambda restaurant: restaurant.distance)
 
