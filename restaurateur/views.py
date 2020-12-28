@@ -9,6 +9,8 @@ from django.views import View
 
 from foodcartapp.models import Order, Product, Restaurant, RestaurantMenuItem
 
+from .calculate_distance import calculate_distance
+
 
 class Login(forms.Form):
     username = forms.CharField(
@@ -105,6 +107,11 @@ def view_orders(request):
         inappropriate_restaurants_ids = [
             restaurant for restaurant, product in unavailability_products if product in order_products_id
         ]
-        order.restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids).order_by('name')
+
+        appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids).order_by('name')
+        for restaurant in appropriate_restaurants:
+            restaurant.distance = calculate_distance(restaurant.address, order.address)
+
+        order.restaurants = sorted(appropriate_restaurants, key=lambda restaurant: restaurant.distance)
 
     return render(request, template_name='order_items.html', context={'orders': orders})
