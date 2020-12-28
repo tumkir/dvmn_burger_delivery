@@ -106,12 +106,12 @@ def view_orders(request):
     cache_expiration_time = 60 * 60 * 24 * 7
 
     for order in orders:
-        order_products_id = list(order.order_items.values_list('product_id', flat=True))
+        order_products_ids = list(order.order_items.values_list('product_id', flat=True))
         inappropriate_restaurants_ids = [
-            restaurant for restaurant, product in unavailability_products if product in order_products_id
+            restaurant for restaurant, product in unavailability_products if product in order_products_ids
         ]
 
-        appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids).order_by('name')
+        appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids)
         for restaurant in appropriate_restaurants:
             restaurant.distance = cache.get_or_set(
                 f'{restaurant.address} — {order.address}',
