@@ -83,7 +83,7 @@ class Order(models.Model):
     lastname = models.CharField(max_length=200, verbose_name='Фамилия')
     phonenumber = models.CharField(max_length=40, verbose_name='Телефон')
     address = models.CharField(max_length=500, verbose_name='Адрес')
-    payment_method = models.CharField(max_length=5, choices=PAYMENT_METHOD_CHOICES, null=True, blank=True)
+    payment_method = models.CharField(max_length=5, choices=PAYMENT_METHOD_CHOICES, blank=True)
     status = models.CharField(max_length=15, choices=ORDER_STATUS_CHOICES, default='NEW', verbose_name='Статус заказа')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
     registrated_at = models.DateTimeField(default=timezone.now, verbose_name='Зарегистрирован в')
