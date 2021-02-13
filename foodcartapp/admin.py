@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.shortcuts import redirect, reverse
+from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
-
 from StarBurger.settings import ALLOWED_HOSTS
 
 from .models import (Order, OrderProduct, Product, ProductCategory, Restaurant,
@@ -49,7 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
         # FIXME SQLite can not convert letter case for cyrillic words properly, so search will be buggy.
         # Migration to PostgreSQL is necessary
         'name',
-        'category',
+        'category__name',
     ]
 
     inlines = [
@@ -83,7 +83,7 @@ class ProductAdmin(admin.ModelAdmin):
     class Media:
         css = {
             "all": (
-                "admin/foodcartapp.css",
+                static("admin/foodcartapp.css")
             )
         }
 
