@@ -3,7 +3,8 @@ from django.shortcuts import redirect, reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 from django.utils.http import url_has_allowed_host_and_scheme
-from StarBurger.settings import ALLOWED_HOSTS
+
+from star_burger.settings import ALLOWED_HOSTS
 
 from .models import (Order, OrderProduct, Product, ProductCategory, Restaurant,
                      RestaurantMenuItem)
