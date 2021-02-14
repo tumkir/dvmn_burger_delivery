@@ -5,7 +5,7 @@ from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Restaurant(models.Model):
-    name = models.CharField('название', max_length=50)
+    name = models.CharField('название', max_length=50, db_index=True)
     address = models.CharField('адрес', max_length=100, blank=True)
     contact_phone = models.CharField('контактный телефон', max_length=50, blank=True)
 
@@ -86,12 +86,14 @@ class Order(models.Model):
     lastname = models.CharField(max_length=200, verbose_name='Фамилия')
     phonenumber = PhoneNumberField(verbose_name='Телефон')
     address = models.CharField(max_length=500, verbose_name='Адрес')
-    payment_method = models.CharField(max_length=5, choices=PAYMENT_METHOD_CHOICES, blank=True)
-    status = models.CharField(max_length=15, choices=ORDER_STATUS_CHOICES, default='NEW', verbose_name='Статус заказа')
+    payment_method = models.CharField(max_length=5, choices=PAYMENT_METHOD_CHOICES, blank=True,
+                                      db_index=True, verbose_name='Способ оплаты')
+    status = models.CharField(max_length=15, choices=ORDER_STATUS_CHOICES, default='NEW',
+                              db_index=True, verbose_name='Статус заказа')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
-    registrated_at = models.DateTimeField(default=timezone.now, verbose_name='Зарегистрирован в')
-    called_at = models.DateTimeField(null=True, blank=True, verbose_name='Позвонили в')
-    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name='Доставлен в')
+    registrated_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Зарегистрирован в')
+    called_at = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name='Позвонили в')
+    delivered_at = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name='Доставлен в')
 
     class Meta:
         verbose_name = 'заказ'
