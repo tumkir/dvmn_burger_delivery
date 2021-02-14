@@ -107,7 +107,7 @@ class OrderProduct(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items', verbose_name='Заказ')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='order_items', verbose_name='Товар')
     quantity = models.PositiveSmallIntegerField(verbose_name='Количество')
-    price = models.PositiveSmallIntegerField(verbose_name='Стоимость продукта')
+    price = models.PositiveSmallIntegerField(verbose_name='Цена на момент создания заказа')
 
     def __str__(self):
         return f'{self.product} {self.order}'

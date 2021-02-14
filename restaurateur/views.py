@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import cache
-from django.db.models import Sum
+from django.db.models import F, Sum
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -99,7 +99,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.annotate(price=Sum('items__price'))
+    orders = Order.objects.annotate(price=Sum(F('items__price') * F('items__quantity')))
 
     unavailability_products = list(RestaurantMenuItem.objects.filter(availability=False).values_list('restaurant_id', 'product_id'))
 
