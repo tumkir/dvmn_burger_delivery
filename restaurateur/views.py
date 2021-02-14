@@ -99,14 +99,14 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    orders = Order.objects.annotate(price=Sum('order_items__price'))
+    orders = Order.objects.annotate(price=Sum('items__price'))
 
     unavailability_products = list(RestaurantMenuItem.objects.filter(availability=False).values_list('restaurant_id', 'product_id'))
 
     cache_expiration_time = 60 * 60 * 24 * 7
 
     for order in orders:
-        order_products_ids = list(order.order_items.values_list('product_id', flat=True))
+        order_products_ids = list(order.items.values_list('product_id', flat=True))
         inappropriate_restaurants_ids = [
             restaurant for restaurant, product in unavailability_products if product in order_products_ids
         ]
