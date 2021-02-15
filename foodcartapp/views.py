@@ -4,7 +4,7 @@ from django.templatetags.static import static
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer, ValidationError
+from rest_framework.serializers import ModelSerializer
 
 from .models import Order, OrderProduct, Product
 
@@ -68,7 +68,7 @@ class OrderProductSerializer(ModelSerializer):
 
 
 class OrderSerializer(ModelSerializer):
-    products = OrderProductSerializer(many=True, write_only=True)
+    products = OrderProductSerializer(many=True, write_only=True, allow_empty=False)
 
     class Meta:
         model = Order
@@ -82,9 +82,6 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
 
     products_fields = serializer.validated_data['products']
-
-    if not products_fields:
-        raise ValidationError('Products field must be not empty list')
 
     order = Order.objects.create(
         firstname=serializer.validated_data['firstname'],
