@@ -1,7 +1,14 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import F, Sum
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
+
+
+class OrderQuerySet(models.QuerySet):
+
+    def calculate_order_price(self):
+        return self.annotate(price=Sum(F('items__price') * F('items__quantity')))
 
 
 class Restaurant(models.Model):
@@ -18,6 +25,7 @@ class Restaurant(models.Model):
 
 
 class ProductQuerySet(models.QuerySet):
+
     def available(self):
         return self.distinct().filter(menu_items__availability=True)
 
@@ -94,6 +102,8 @@ class Order(models.Model):
     registrated_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Зарегистрирован в')
     called_at = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name='Позвонили в')
     delivered_at = models.DateTimeField(null=True, blank=True, db_index=True, verbose_name='Доставлен в')
+
+    objects = OrderQuerySet.as_manager()
 
     class Meta:
         verbose_name = 'заказ'
