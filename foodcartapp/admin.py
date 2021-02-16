@@ -98,7 +98,7 @@ class ProductAdmin(admin.ModelAdmin):
         if not obj.image or not obj.id:
             return 'нет картинки'
         edit_url = reverse('admin:foodcartapp_product_change', args=(obj.id,))
-        return format_html('<a href="{edit_url}"><img src="{src}" height="50"/></a>', edit_url=edit_url, src=obj.image.url)
+        return format_html('<a href="{edit_url}"><img src="{src}" style="max-width: 50px; max-height: 50px;" /></a>', edit_url=edit_url, src=obj.image.url)
     get_image_list_preview.short_description = 'превью'
 
 
