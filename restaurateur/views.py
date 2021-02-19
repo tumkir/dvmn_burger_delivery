@@ -7,9 +7,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
 
+from foodcartapp.geo_services import calculate_distance
 from foodcartapp.models import Order, Product, Restaurant, RestaurantMenuItem
-
-from .calculate_distance import calculate_distance
 
 
 class Login(forms.Form):
@@ -118,6 +117,8 @@ def view_orders(request):
                 cache_expiration_time
             )
 
-        order.restaurants = sorted(appropriate_restaurants, key=lambda restaurant: restaurant.distance)
+        order.restaurants = sorted(
+            appropriate_restaurants, key=lambda restaurant: (restaurant.distance is None, restaurant.distance)
+        )
 
     return render(request, template_name='order_items.html', context={'orders': orders})

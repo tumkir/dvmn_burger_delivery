@@ -41,7 +41,11 @@
           <summary>Развернуть</summary>
           <ul>
             {% for restaurant in order.restaurants %}
+            {% if not restaurant.distance %}
+            <li>{{ restaurant }} —<br>расстояние неизвестно</li>
+            {% else %}
             <li>{{ restaurant }} —<br>{{ restaurant.distance }} км.</li>
+            {% endif %}
             {% endfor %}
           </ul>
         </details>

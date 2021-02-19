@@ -6,6 +6,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
+from .geo_services import geocoding
 from .models import Order, OrderProduct, Product
 
 
@@ -99,5 +100,7 @@ def register_order(request):
         )
 
     response = OrderSerializer(order)
+
+    geocoding(serializer.validated_data['address'])
 
     return Response(response.data, status=status.HTTP_201_CREATED)
