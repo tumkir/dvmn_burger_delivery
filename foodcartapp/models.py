@@ -5,6 +5,12 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
+class ProductQuerySet(models.QuerySet):
+
+    def available(self):
+        return self.distinct().filter(menu_items__availability=True)
+
+
 class OrderQuerySet(models.QuerySet):
 
     def calculate_order_price(self):
@@ -16,18 +22,12 @@ class Restaurant(models.Model):
     address = models.CharField('адрес', max_length=100, blank=True)
     contact_phone = models.CharField('контактный телефон', max_length=50, blank=True)
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'ресторан'
         verbose_name_plural = 'рестораны'
 
-
-class ProductQuerySet(models.QuerySet):
-
-    def available(self):
-        return self.distinct().filter(menu_items__availability=True)
+    def __str__(self):
+        return self.name
 
 
 class ProductCategory(models.Model):
@@ -52,12 +52,12 @@ class Product(models.Model):
 
     objects = ProductQuerySet.as_manager()
 
-    def __str__(self):
-        return self.name
-
     class Meta:
         verbose_name = 'товар'
         verbose_name_plural = 'товары'
+
+    def __str__(self):
+        return self.name
 
 
 class RestaurantMenuItem(models.Model):
@@ -67,15 +67,15 @@ class RestaurantMenuItem(models.Model):
                                 verbose_name='продукт')
     availability = models.BooleanField('в продаже', default=True, db_index=True)
 
-    def __str__(self):
-        return f"{self.restaurant.name} - {self.product.name}"
-
     class Meta:
         verbose_name = 'пункт меню ресторана'
         verbose_name_plural = 'пункты меню ресторана'
         unique_together = [
             ['restaurant', 'product']
         ]
+
+    def __str__(self):
+        return f"{self.restaurant.name} - {self.product.name}"
 
 
 class Order(models.Model):
@@ -119,12 +119,12 @@ class OrderProduct(models.Model):
     quantity = models.PositiveSmallIntegerField(validators=[MinValueValidator(1)], verbose_name='Количество')
     price = models.PositiveSmallIntegerField(verbose_name='Цена на момент создания заказа')
 
-    def __str__(self):
-        return f'{self.product} {self.order}'
-
     class Meta:
         verbose_name = 'элемент заказа'
         verbose_name_plural = 'элементы заказа'
+
+    def __str__(self):
+        return f'{self.product} {self.order}'
 
 
 class Place(models.Model):
@@ -134,9 +134,9 @@ class Place(models.Model):
     request_to_geocoder_at = models.DateTimeField(default=timezone.now, db_index=True,
                                                   verbose_name='Координаты получены')
 
-    def __str__(self):
-        return self.address
-
     class Meta:
         verbose_name = 'место'
         verbose_name_plural = 'места'
+
+    def __str__(self):
+        return self.address
