@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.core.cache import cache
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.text import slugify
 from django.views import View
 
 from foodcartapp.geo_services import calculate_distance
@@ -98,7 +99,6 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = Order.objects.calculate_order_price()
-    restaurants = list(Restaurant.objects.all())
     unavailability_products = list(RestaurantMenuItem.objects.filter(availability=False).values_list('restaurant_id', 'product_id'))
 
     cache_expiration_time = 60 * 60 * 24 * 7
@@ -110,19 +110,15 @@ def view_orders(request):
             restaurant for restaurant, product in unavailability_products if product in order_products_ids
         ]
 
-        appropriate_restaurants = [
-            restaurant for restaurant in restaurants if restaurant.id not in inappropriate_restaurants_ids
-        ]
+        appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids)
 
         for restaurant in appropriate_restaurants:
-            restaurant.distance = cache.get(f'{restaurant.address} — {order.address}')
+            cache_key = slugify(f'{restaurant.address} — {order.address}', allow_unicode=True)
+            restaurant.distance = cache.get(cache_key)
             if not restaurant.distance:
                 restaurant.distance = calculate_distance(restaurant.address, order.address)
-                cache.set(
-                    f'{restaurant.address} — {order.address}',
-                    restaurant.distance,
-                    cache_expiration_time
-                )
+                if restaurant.distance:
+                    cache.set(cache_key, restaurant.distance, cache_expiration_time)
 
         order.restaurants = sorted(
             appropriate_restaurants, key=lambda restaurant: (restaurant.distance is None, restaurant.distance)
