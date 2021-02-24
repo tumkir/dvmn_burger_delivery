@@ -123,12 +123,20 @@ class OrderProduct(models.Model):
         return f'{self.product} {self.order}'
 
     class Meta:
-        verbose_name = 'Элемент заказа'
-        verbose_name_plural = 'Элементы заказа'
+        verbose_name = 'элемент заказа'
+        verbose_name_plural = 'элементы заказа'
 
 
 class Place(models.Model):
     address = models.CharField(max_length=500, verbose_name='Адрес', unique=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Широта')
     longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Долгота')
-    request_to_geocoder_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Зарегистрирован в')
+    request_to_geocoder_at = models.DateTimeField(default=timezone.now, db_index=True,
+                                                  verbose_name='Координаты получены')
+
+    def __str__(self):
+        return self.address
+
+    class Meta:
+        verbose_name = 'место'
+        verbose_name_plural = 'места'

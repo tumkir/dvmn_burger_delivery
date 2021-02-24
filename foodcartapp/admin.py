@@ -6,8 +6,8 @@ from django.utils.http import url_has_allowed_host_and_scheme
 
 from star_burger.settings import ALLOWED_HOSTS
 
-from .models import (Order, OrderProduct, Product, ProductCategory, Restaurant,
-                     RestaurantMenuItem)
+from .models import (Order, OrderProduct, Place, Product, ProductCategory,
+                     Restaurant, RestaurantMenuItem)
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
@@ -124,3 +124,8 @@ class OrderAdmin(admin.ModelAdmin):
             return redirect(request.GET['next'])
         else:
             return res
+
+
+@admin.register(Place)
+class PlaceAdmin(admin.ModelAdmin):
+    pass
