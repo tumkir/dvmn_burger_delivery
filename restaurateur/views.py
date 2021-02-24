@@ -98,24 +98,31 @@ def view_restaurants(request):
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
     orders = Order.objects.calculate_order_price()
-
+    restaurants = list(Restaurant.objects.all())
     unavailability_products = list(RestaurantMenuItem.objects.filter(availability=False).values_list('restaurant_id', 'product_id'))
 
     cache_expiration_time = 60 * 60 * 24 * 7
 
     for order in orders:
-        order_products_ids = list(order.items.values_list('product_id', flat=True))
+        order_products_ids = order.items.values_list('product_id', flat=True)
+
         inappropriate_restaurants_ids = [
             restaurant for restaurant, product in unavailability_products if product in order_products_ids
         ]
 
-        appropriate_restaurants = Restaurant.objects.exclude(id__in=inappropriate_restaurants_ids)
+        appropriate_restaurants = [
+            restaurant for restaurant in restaurants if restaurant.id not in inappropriate_restaurants_ids
+        ]
+
         for restaurant in appropriate_restaurants:
-            restaurant.distance = cache.get_or_set(
-                f'{restaurant.address} — {order.address}',
-                calculate_distance(restaurant.address, order.address),
-                cache_expiration_time
-            )
+            restaurant.distance = cache.get(f'{restaurant.address} — {order.address}')
+            if not restaurant.distance:
+                restaurant.distance = calculate_distance(restaurant.address, order.address)
+                cache.set(
+                    f'{restaurant.address} — {order.address}',
+                    restaurant.distance,
+                    cache_expiration_time
+                )
 
         order.restaurants = sorted(
             appropriate_restaurants, key=lambda restaurant: (restaurant.distance is None, restaurant.distance)

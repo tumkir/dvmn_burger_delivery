@@ -36,29 +36,25 @@ def geocoding(address, apikey=API_KEY):
     return lat, lon
 
 
-def save_coordinates_to_db(address, latitune, longitude):
+def save_coordinates_to_db(address, latitude, longitude):
     Place.objects.get_or_create(
         address=address,
-        latitude=latitune,
+        latitude=latitude,
         longitude=longitude,
     )
 
 
 def calculate_distance(restaurant_address, client_address):
-    try:
-        restaurant = Place.objects.get(address=restaurant_address)
-        restaurant_coordinates = (restaurant.latitude, restaurant.longitude)
-    except Place.DoesNotExist:
-        restaurant_coordinates = geocoding(restaurant_address)
+    restaurant_coordinates = Place.objects.filter(address=restaurant_address).values_list('latitude', 'longitude')
     if not restaurant_coordinates:
-        return
+        restaurant_coordinates = geocoding(restaurant_address)
+        if not restaurant_coordinates:
+            return
 
-    try:
-        client = Place.objects.get(address=client_address)
-        client_coordinates = (client.latitude, client.longitude)
-    except Place.DoesNotExist:
-        client_coordinates = geocoding(client_address)
+    client_coordinates = Place.objects.filter(address=client_address).values_list('latitude', 'longitude')
     if not client_coordinates:
-        return
+        client_coordinates = geocoding(client_address)
+        if not client_coordinates:
+            return
 
-    return round(distance.distance(restaurant_coordinates, client_coordinates).km, 3)
+    return round(distance.distance(restaurant_coordinates, client_coordinates).km, 2)

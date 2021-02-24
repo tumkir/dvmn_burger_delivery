@@ -128,7 +128,7 @@ class OrderProduct(models.Model):
 
 
 class Place(models.Model):
-    address = models.CharField(max_length=500, verbose_name='Адрес', db_index=True)
+    address = models.CharField(max_length=500, verbose_name='Адрес', unique=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Широта')
     longitude = models.DecimalField(max_digits=9, decimal_places=6, verbose_name='Долгота')
     request_to_geocoder_at = models.DateTimeField(default=timezone.now, db_index=True, verbose_name='Зарегистрирован в')
