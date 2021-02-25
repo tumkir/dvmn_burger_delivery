@@ -9,6 +9,14 @@ env.read_env()
 API_KEY = env.str('YANDEX_API_KEY')
 
 
+def save_coordinates_to_db(address, latitude, longitude):
+    Place.objects.get_or_create(
+        address=address,
+        latitude=latitude,
+        longitude=longitude,
+    )
+
+
 def geocoding(address, apikey=API_KEY):
     '''
     Geocoder response structure:
@@ -36,25 +44,21 @@ def geocoding(address, apikey=API_KEY):
     return lat, lon
 
 
-def save_coordinates_to_db(address, latitude, longitude):
-    Place.objects.get_or_create(
-        address=address,
-        latitude=latitude,
-        longitude=longitude,
-    )
+def get_coordinates(address):
+    try:
+        place = Place.objects.get(address=address)
+        return (place.latitude, place.longitude)
+    except Place.DoesNotExist:
+        return geocoding(address)
 
 
 def calculate_distance(restaurant_address, client_address):
-    restaurant_coordinates = Place.objects.filter(address=restaurant_address).values_list('latitude', 'longitude')
+    restaurant_coordinates = get_coordinates(restaurant_address)
     if not restaurant_coordinates:
-        restaurant_coordinates = geocoding(restaurant_address)
-        if not restaurant_coordinates:
-            return
+        return
 
-    client_coordinates = Place.objects.filter(address=client_address).values_list('latitude', 'longitude')
+    client_coordinates = get_coordinates(client_address)
     if not client_coordinates:
-        client_coordinates = geocoding(client_address)
-        if not client_coordinates:
-            return
+        return
 
     return round(distance.distance(restaurant_coordinates, client_coordinates).km, 2)
