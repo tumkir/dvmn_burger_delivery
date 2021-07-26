@@ -5,12 +5,6 @@ from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
 
-class ProductQuerySet(models.QuerySet):
-
-    def available(self):
-        return self.distinct().filter(menu_items__availability=True)
-
-
 class OrderQuerySet(models.QuerySet):
 
     def calculate_order_price(self):
@@ -30,8 +24,21 @@ class Restaurant(models.Model):
         return self.name
 
 
+class ProductQuerySet(models.QuerySet):
+    def available(self):
+        products = (
+            RestaurantMenuItem.objects
+            .filter(availability=True)
+            .values_list('product')
+        )
+        return self.filter(pk__in=products)
+
+
 class ProductCategory(models.Model):
-    name = models.CharField('название', max_length=50)
+    name = models.CharField(
+        'название',
+        max_length=50
+    )
 
     class Meta:
         verbose_name = 'категория'
@@ -42,13 +49,37 @@ class ProductCategory(models.Model):
 
 
 class Product(models.Model):
-    name = models.CharField('название', max_length=50)
-    category = models.ForeignKey(ProductCategory, null=True, blank=True, on_delete=models.SET_NULL,
-                                 verbose_name='категория', related_name='products')
-    price = models.DecimalField('цена', max_digits=8, decimal_places=2, validators=[MinValueValidator(0)])
-    image = models.ImageField('картинка')
-    special_status = models.BooleanField('спец.предложение', default=False, db_index=True)
-    description = models.TextField('описание', max_length=200, blank=True)
+    name = models.CharField(
+        'название',
+        max_length=50
+    )
+    category = models.ForeignKey(
+        ProductCategory,
+        verbose_name='категория',
+        related_name='products',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
+    price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    image = models.ImageField(
+        'картинка'
+    )
+    special_status = models.BooleanField(
+        'спец.предложение',
+        default=False,
+        db_index=True,
+    )
+    description = models.TextField(
+        'описание',
+        max_length=200,
+        blank=True,
+    )
 
     objects = ProductQuerySet.as_manager()
 
@@ -61,11 +92,23 @@ class Product(models.Model):
 
 
 class RestaurantMenuItem(models.Model):
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.CASCADE, related_name='menu_items',
-                                   verbose_name="ресторан")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='menu_items',
-                                verbose_name='продукт')
-    availability = models.BooleanField('в продаже', default=True, db_index=True)
+    restaurant = models.ForeignKey(
+        Restaurant,
+        on_delete=models.CASCADE,
+        related_name='menu_items',
+        verbose_name="ресторан"
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='menu_items',
+        verbose_name='продукт'
+    )
+    availability = models.BooleanField(
+        'в продаже',
+        default=True,
+        db_index=True
+    )
 
     class Meta:
         verbose_name = 'пункт меню ресторана'
